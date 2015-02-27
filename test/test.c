@@ -128,7 +128,23 @@ void read_error(char error_code) {
     _error = error_code;
 }
 
-static char * test_fixstr() {
+void _strappend(char * dest, char c) {
+    int i = strlen(dest);
+    dest[i] = c;
+    dest[i+1] = '\0';
+}
+
+char writer(char c) {
+    _strappend(_str_val, c);
+    return 0;
+}
+
+void write_error(char error_code) {
+    _flags |= FLAG_ERROR;
+    _error = error_code;
+}
+
+static char * test_read_fixstr() {
     msgpk_t msgpk;
 
     msgpk_init(&msgpk);
@@ -147,7 +163,7 @@ static char * test_fixstr() {
     return 0;
 }
 
-static char * test_nil() {
+static char * test_read_nil() {
     msgpk_t msgpk;
 
     msgpk_init(&msgpk);
@@ -161,7 +177,7 @@ static char * test_nil() {
     return 0;
 }
 
-static char * test_boolean() {
+static char * test_read_boolean() {
     msgpk_t msgpk;
 
     msgpk_init(&msgpk);
@@ -179,7 +195,7 @@ static char * test_boolean() {
     return 0;
 }
 
-static char * test_fixint() {
+static char * test_read_fixint() {
     msgpk_t msgpk;
 
     msgpk_init(&msgpk);
@@ -206,7 +222,7 @@ static char * test_fixint() {
     return 0;
 }
 
-static char * test_fixarray() {
+static char * test_read_fixarray() {
     msgpk_t msgpk;
 
     msgpk_init(&msgpk);
@@ -251,7 +267,7 @@ static char * test_fixarray() {
     return 0;
 }
 
-static char * test_fixmap() {
+static char * test_read_fixmap() {
     msgpk_t msgpk;
 
     msgpk_init(&msgpk);
@@ -292,7 +308,7 @@ static char * test_fixmap() {
     return 0;
 }
 
-static char * test_error() {
+static char * test_read_error() {
     msgpk_t msgpk;
 
     msgpk_init(&msgpk);
@@ -308,14 +324,181 @@ static char * test_error() {
     return 0;
 }
 
+static char * test_write_nil() {
+    msgpk_t msgpk;
+
+    msgpk_init(&msgpk);
+    msgpk.vt.writer = writer;
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_nil(&msgpk);
+    mu_assert("nil       1/1", "error, wrong value", strcmp(_str_val, "\xc0") == 0);
+
+    printf("\n");
+    return 0;
+}
+
+static char * test_write_boolean() {
+    msgpk_t msgpk;
+
+    msgpk_init(&msgpk);
+    msgpk.vt.writer = writer;
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_boolean(&msgpk, 0);
+    mu_assert("boolean   1/2", "error, wrong value", strcmp(_str_val, "\xc2") == 0);
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_boolean(&msgpk, 1);
+    mu_assert("boolean   2/2", "error, wrong value", strcmp(_str_val, "\xc3") == 0);
+
+    printf("\n");
+    return 0;
+}
+
+static char * test_write_fixstr() {
+    msgpk_t msgpk;
+
+    msgpk_init(&msgpk);
+    msgpk.vt.writer = writer;
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_str(&msgpk, "test");
+    mu_assert("fixstr    1/2", "error, wrong value", strcmp(_str_val, "\xa4""test") == 0);
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_str(&msgpk, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    mu_assert("fixstr    2/2", "error, wrong value", strcmp(_str_val, "\xbf""aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") == 0);
+
+    printf("\n");
+    return 0;
+}
+
+static char * test_write_fixint() {
+    msgpk_t msgpk;
+
+    msgpk_init(&msgpk);
+    msgpk.vt.writer = writer;
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_number(&msgpk, 1);
+    mu_assert("fixint    1/4", "error, wrong value", strcmp(_str_val, "\x01") == 0);
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_number(&msgpk, 127);
+    mu_assert("fixint    2/4", "error, wrong value", strcmp(_str_val, "\x7f") == 0);
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_number(&msgpk, -1);
+    mu_assert("fixint    3/4", "error, wrong value", strcmp(_str_val, "\xff") == 0);
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_number(&msgpk, -32);
+    mu_assert("fixint    4/4", "error, wrong value", strcmp(_str_val, "\xe0") == 0);
+
+    printf("\n");
+    return 0;
+}
+
+static char * test_write_fixarray() {
+    msgpk_t msgpk;
+
+    msgpk_init(&msgpk);
+    msgpk.vt.writer = writer;
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_start_array(&msgpk, 0);
+    mu_assert("fixarray  1/3", "error, wrong value", strcmp(_str_val, "\x90") == 0);
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_start_array(&msgpk, 4);
+    msgpk_write_str(&msgpk, "test");
+    msgpk_write_number(&msgpk, 1);
+    msgpk_write_nil(&msgpk);
+    msgpk_write_boolean(&msgpk, 0);
+    msgpk_write_boolean(&msgpk, 1);// After array
+    mu_assert("fixarray  2/3", "error, wrong value", strcmp(_str_val, "\x94\xa4\x74\x65\x73\x74\x01\xc0\xc2\xc3") == 0);
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_start_array(&msgpk, 15);
+    for (int i = 0; i < 15; i++)
+      msgpk_write_number(&msgpk, 1);
+    mu_assert("fixarray  3/3", "error, wrong value", strcmp(_str_val, "\x9F\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01") == 0);
+
+    printf("\n");
+    return 0;
+}
+
+static char * test_write_fixmap() {
+    msgpk_t msgpk;
+
+    msgpk_init(&msgpk);
+    msgpk.vt.writer = writer;
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_start_map(&msgpk, 0);
+    mu_assert("fixmap    1/3", "error, wrong value", strcmp(_str_val, "\x80") == 0);
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_start_map(&msgpk, 4);
+    msgpk_write_number_entry(&msgpk, "s1", 1);
+    msgpk_write_boolean_entry(&msgpk, "s2", 1);
+    msgpk_write_nil_entry(&msgpk, "s3");
+    msgpk_write_str_entry(&msgpk, "s4", "test");
+    mu_assert("fixmap    2/3", "error, wrong value", strcmp(_str_val, "\x84\xa2\x73\x31\x01\xa2\x73\x32\xc3\xa2\x73\x33\xc0\xa2\x73\x34\xa4\x74\x65\x73\x74") == 0);
+
+    memset(_str_val, 0, MAX_SIZE);
+    msgpk_write_start_map(&msgpk, 15);
+    for (int i = 0; i < 15; i++)
+      msgpk_write_number_entry(&msgpk, "s", 1);
+    mu_assert("fixmap    3/3", "error, wrong value", strcmp(_str_val, "\x8f\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01") == 0);
+
+    printf("\n");
+    return 0;
+}
+
+static char * test_write_error() {
+    msgpk_t msgpk;
+
+    msgpk_init(&msgpk);
+    msgpk.vt.write_error = write_error;
+
+    memset(_str_val, 0, MAX_SIZE);
+    _flags = 0;
+    _error = 0;
+    msgpk_write_number(&msgpk, 128);
+    mu_assert("error     1/3", "error, cb not called", _flags & FLAG_ERROR);
+    mu_assert("error     2/3", "error, wrong error code", _error == ERROR_OUT_OF_RANGE);
+
+    memset(_str_val, 0, MAX_SIZE);
+    _flags = 0;
+    _error = 0;
+    msgpk_write_str(&msgpk, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    mu_assert("error     3/3", "error, wrong error code", _error == ERROR_OUT_OF_RANGE);
+
+    printf("\n");
+    return 0;
+}
+
+
 static char * all_tests() {
-    mu_run_test(test_nil);
-    mu_run_test(test_boolean);
-    mu_run_test(test_fixstr);
-    mu_run_test(test_fixint);
-    mu_run_test(test_fixarray);
-    mu_run_test(test_fixmap);
-    mu_run_test(test_error);
+printf("#######################\n#  Read test!\n#######################\n");
+    mu_run_test(test_read_nil);
+    mu_run_test(test_read_boolean);
+    mu_run_test(test_read_fixstr);
+    mu_run_test(test_read_fixint);
+    mu_run_test(test_read_fixarray);
+    mu_run_test(test_read_fixmap);
+    mu_run_test(test_read_error);
+
+printf("#######################\n#  Write test!\n#######################\n");
+    mu_run_test(test_write_nil);
+    mu_run_test(test_write_boolean);
+    mu_run_test(test_write_fixstr);
+    mu_run_test(test_write_fixint);
+    mu_run_test(test_write_fixarray);
+    mu_run_test(test_write_fixmap);
+    mu_run_test(test_write_error);
     return 0;
 }
 
