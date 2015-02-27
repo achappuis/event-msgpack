@@ -11,3 +11,9 @@ Some conditional compilation directives are available. These directives should o
 |-----------|--------------------------|
 | NO_READER | Disable reading features |
 | NO_WRITER | Disable writing features |
+
+If you use gcc you can use these directives as follow
+
+```
+$ gcc -DNO_READER -c event-msgpack.c
+```
