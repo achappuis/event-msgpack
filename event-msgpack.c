@@ -44,7 +44,8 @@ void msgpk_init(msgpk_t *msgpk)
     msgpk->array_el_cnt = -1;
 }
 
-void msgpk_do(msgpk_t *msgpk, char *cs)
+#ifndef NO_READER
+void msgpk_read(msgpk_t *msgpk, char *cs)
 {
     unsigned long i;
     char c;
@@ -142,3 +143,4 @@ void msgpk_do(msgpk_t *msgpk, char *cs)
 
     _ELEMENTS_CHECK
 }
+#endif

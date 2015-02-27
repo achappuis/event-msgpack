@@ -135,12 +135,12 @@ static char * test_fixstr() {
     msgpk.vt.read_str = read_str;
 
     _flags = 0;
-    msgpk_do(&msgpk, "\xa4test");
+    msgpk_read(&msgpk, "\xa4test");
     mu_assert("fixstr    1/3", "error, cb not called", _flags & FLAG_FIXSTR);
     mu_assert("fixstr    2/3", "error, wrong value", strcmp(_str_val, "test") == 0);
 
     _flags = 0;
-    msgpk_do(&msgpk, "\xbf""aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    msgpk_read(&msgpk, "\xbf""aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     mu_assert("fixstr    3/3", "error, wrong value", strcmp(_str_val, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") == 0);
 
     printf("\n");
@@ -154,7 +154,7 @@ static char * test_nil() {
     msgpk.vt.read_nil = read_nil;
 
     _flags = 0;
-    msgpk_do(&msgpk, "\xc0");
+    msgpk_read(&msgpk, "\xc0");
     mu_assert("nil       1/1", "error, cb not called", _flags & FLAG_NIL);
 
     printf("\n");
@@ -168,11 +168,11 @@ static char * test_boolean() {
     msgpk.vt.read_boolean = read_boolean;
 
     _flags = 0;
-    msgpk_do(&msgpk, "\xc2"); // False
+    msgpk_read(&msgpk, "\xc2"); // False
     mu_assert("boolean   1/3", "error, cb not called", _flags & FLAG_BOOLEAN);
     mu_assert("boolean   2/3", "error, wrong value", !_chr_val);
 
-    msgpk_do(&msgpk, "\xc3"); // True
+    msgpk_read(&msgpk, "\xc3"); // True
     mu_assert("boolean   3/3", "error, wrong value", _chr_val);
 
     printf("\n");
@@ -186,20 +186,20 @@ static char * test_fixint() {
     msgpk.vt.read_number = read_number;
 
     _flags = 0;_int_val = 255;
-    msgpk_do(&msgpk, "\x01");
+    msgpk_read(&msgpk, "\x01");
     mu_assert("fixint    1/5", "error, cb not called", _flags & FLAG_NUMBER);
     mu_assert("fixint    2/5", "error, wrong value (0x01)", _int_val == 1);
 
     _flags = 0;_int_val = 255;
-    msgpk_do(&msgpk, "\x7F");
+    msgpk_read(&msgpk, "\x7F");
     mu_assert("fixint    3/5", "error, wrong value (0x7F)", _int_val == 127);
 
     _flags = 0;_int_val = 255;
-    msgpk_do(&msgpk, "\xFF");
+    msgpk_read(&msgpk, "\xFF");
     mu_assert("fixint    4/5", "error, wrong value (0xFF)", _int_val == -1);
 
     _flags = 0;_int_val = 255;
-    msgpk_do(&msgpk, "\xE0");
+    msgpk_read(&msgpk, "\xE0");
     mu_assert("fixint    5/5", "error, wrong value (0xE0)", _int_val == -32);
 
     printf("\n");
@@ -219,7 +219,7 @@ static char * test_fixarray() {
 
     _flags = 0;
     _int_size = 255;
-    msgpk_do(&msgpk, "\x90");
+    msgpk_read(&msgpk, "\x90");
     mu_assert("fixarray  1/13", "error, start cb not called", _flags & FLAG_START_ARRAY);
     mu_assert("fixarray  2/13", "error, stop cb not called", _flags & FLAG_STOP_ARRAY);
     mu_assert("fixarray  3/13", "error, wrong size (0)", _int_size == 0);
@@ -229,7 +229,7 @@ static char * test_fixarray() {
     *_str_val = '\0';
     _int_val = 255;
     _chr_val = 1;
-    msgpk_do(&msgpk, "\x94\xa4\x74\x65\x73\x74\x01\xc0\xc2");
+    msgpk_read(&msgpk, "\x94\xa4\x74\x65\x73\x74\x01\xc0\xc2");
     mu_assert("fixarray  4/13", "error, start cb not called", _flags & FLAG_START_ARRAY);
     mu_assert("fixarray  5/13", "error, wrong size (4)", _int_size == 4);
 
@@ -242,7 +242,7 @@ static char * test_fixarray() {
 
     _flags = 0;
     _int_size = 255;
-    msgpk_do(&msgpk, "\x9F\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01");
+    msgpk_read(&msgpk, "\x9F\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01");
     mu_assert("fixarray 11/13", "error, start cb not called", _flags & FLAG_START_ARRAY);
     mu_assert("fixarray 12/13", "error, wrong size (15)", _int_size == 15);
     mu_assert("fixarray 13/13", "error, stop cb not called", _flags & FLAG_STOP_ARRAY);
@@ -263,14 +263,14 @@ static char * test_fixmap() {
     msgpk.vt.read_stop_map = read_stop_map;
 
     _flags = 0;
-    msgpk_do(&msgpk, "\x80");
+    msgpk_read(&msgpk, "\x80");
     mu_assert("fixmap    1/13", "error, start cb not called", _flags & FLAG_START_MAP);
     mu_assert("fixmap    2/13", "error, stop cb not called", _flags & FLAG_STOP_MAP);
     mu_assert("fixmap    3/13", "error, wrong size (0)", _int_size == 0);
 
     _flags = 0;
     _int_size = 255;
-    msgpk_do(&msgpk, "\x84\xa2\x73\x31\x01\xa2\x73\x32\xc3\xa2\x73\x33\xc0\xa2\x73\x34\xa4\x74\x65\x73\x74");
+    msgpk_read(&msgpk, "\x84\xa2\x73\x31\x01\xa2\x73\x32\xc3\xa2\x73\x33\xc0\xa2\x73\x34\xa4\x74\x65\x73\x74");
     mu_assert("fixmap    4/13", "error, start cb not called", _flags & FLAG_START_MAP);
     mu_assert("fixmap    5/13", "error, wrong size (4)", _int_size == 4);
 
@@ -283,7 +283,7 @@ static char * test_fixmap() {
 
     _flags = 0;
     _int_size = 255;
-    msgpk_do(&msgpk, "\x8f\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01");
+    msgpk_read(&msgpk, "\x8f\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01\xa1\x73\x01");
     mu_assert("fixmap   11/13", "error, start cb not called", _flags & FLAG_START_MAP);
     mu_assert("fixmap   12/13", "error, wrong size (15)", _int_size == 15);
     mu_assert("fixmap   13/13", "error, stop cb not called", _flags & FLAG_STOP_MAP);
@@ -300,7 +300,7 @@ static char * test_error() {
 
     _flags = 0;
     _error = 0;
-    msgpk_do(&msgpk, "\xcc");
+    msgpk_read(&msgpk, "\xcc");
     mu_assert("error     1/2", "error, cb not called", _flags & FLAG_ERROR);
     mu_assert("error     2/2", "error, wrong error code", _error == ERROR_UNKNOWN);
 

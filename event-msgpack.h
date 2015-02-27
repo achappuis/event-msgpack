@@ -35,6 +35,7 @@
 #define ERROR_UNKNOWN 1
 
 struct vtable {
+#ifndef NO_READER
     char (*read_start_map)(int);
     char (*read_stop_map)();
 
@@ -54,6 +55,7 @@ struct vtable {
     char (*read_number_entry)(char*,int);
 
     void (*read_error)(char);
+#endif
 };
 
 typedef struct msgpk_s {
@@ -70,7 +72,9 @@ extern "C" {
 #endif
 
 void msgpk_init(msgpk_t *msgpk);
-void msgpk_do(msgpk_t *msgpk, char *cs);
+#ifndef NO_READER
+void msgpk_read(msgpk_t *msgpk, char *cs);
+#endif
 
 #ifdef __cplusplus
 }
