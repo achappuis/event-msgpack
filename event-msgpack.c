@@ -39,7 +39,7 @@ void msgpk_init(msgpk_t *msgpk)
 #ifndef NO_READER
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 #endif
-#ifndef NO_READER
+#ifndef NO_WRITER
         NULL, NULL,
 #endif
     };
