@@ -81,7 +81,7 @@ extern "C" {
 
 void msgpk_init(msgpk_t *msgpk);
 #ifndef NO_READER
-void msgpk_read(msgpk_t *msgpk, char *cs);
+void msgpk_read(msgpk_t *msgpk, char *cs, int len);
 #endif
 #ifndef NO_WRITER
 char msgpk_write_start_map(msgpk_t*, int);

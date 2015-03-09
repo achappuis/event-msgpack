@@ -52,12 +52,12 @@ void msgpk_init(msgpk_t *msgpk)
 }
 
 #ifndef NO_READER
-void msgpk_read(msgpk_t *msgpk, char *cs)
+void msgpk_read(msgpk_t *msgpk, char *cs, int len)
 {
     unsigned long i;
     char c;
 
-    for (i = 0; i < strlen(cs); i++) {
+    for (i = 0; i < len; i++) {
         c = cs[i];
 
         _ELEMENTS_CHECK;
