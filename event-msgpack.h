@@ -40,28 +40,28 @@
 
 struct vtable {
 #ifndef NO_READER
-    char (*read_start_map)(int);
-    char (*read_stop_map)();
+    char(*read_start_map)(int);
+    char(*read_stop_map)();
 
-    char (*read_start_array)(int);
-    char (*read_stop_array)();
+    char(*read_start_array)(int);
+    char(*read_stop_array)();
 
-    char (*read_str)(char*);
-    char (*read_str_entry)(char*,char*);
+    char(*read_str)(char *);
+    char(*read_str_entry)(char *, char *);
 
-    char (*read_nil)();
-    char (*read_nil_entry)(char*);
+    char(*read_nil)();
+    char(*read_nil_entry)(char *);
 
-    char (*read_boolean)(char);
-    char (*read_boolean_entry)(char*,char);
+    char(*read_boolean)(char);
+    char(*read_boolean_entry)(char *, char);
 
-    char (*read_number)(int);
-    char (*read_number_entry)(char*,int);
+    char(*read_number)(int);
+    char(*read_number_entry)(char *, int);
 
     void (*read_error)(char);
 #endif
 #ifndef NO_WRITER
-    char (*writer)(char);
+    char(*writer)(char);
     void (*write_error)(char);
 #endif
 };
@@ -81,23 +81,23 @@ extern "C" {
 
 void msgpk_init(msgpk_t *msgpk);
 #ifndef NO_READER
-void msgpk_read(msgpk_t *msgpk, char *cs, int len);
+void msgpk_read(msgpk_t *msgpk, char *cs, unsigned int len);
 #endif
 #ifndef NO_WRITER
-char msgpk_write_start_map(msgpk_t*, int);
-char msgpk_write_start_array(msgpk_t*, int);
+char msgpk_write_start_map(msgpk_t *, int);
+char msgpk_write_start_array(msgpk_t *, int);
 
-char msgpk_write_str(msgpk_t*, char*);
-char msgpk_write_str_entry(msgpk_t*, char*,char*);
+char msgpk_write_str(msgpk_t *, char *);
+char msgpk_write_str_entry(msgpk_t *, char *, char *);
 
-char msgpk_write_nil(msgpk_t*);
-char msgpk_write_nil_entry(msgpk_t*, char*);
+char msgpk_write_nil(msgpk_t *);
+char msgpk_write_nil_entry(msgpk_t *, char *);
 
-char msgpk_write_boolean(msgpk_t*, char);
-char msgpk_write_boolean_entry(msgpk_t*, char*,char);
+char msgpk_write_boolean(msgpk_t *, char);
+char msgpk_write_boolean_entry(msgpk_t *, char *, char);
 
-char msgpk_write_number(msgpk_t*, int);
-char msgpk_write_number_entry(msgpk_t*, char*,int);
+char msgpk_write_number(msgpk_t *, int);
+char msgpk_write_number_entry(msgpk_t *, char *, int);
 #endif
 
 #ifdef __cplusplus

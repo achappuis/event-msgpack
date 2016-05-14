@@ -12,3 +12,5 @@
                                if (message) {tests_failed++; return message;} } while (0)
 extern int tests_run;
 extern int tests_failed;
+
+
