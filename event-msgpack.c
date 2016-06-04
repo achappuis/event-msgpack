@@ -51,9 +51,9 @@ void msgpk_read(msgpk_t *msgpk, const char *cs, unsigned int len)
         return;
 
     unsigned long i;
-    char c;
 
     for (i = 0; i < len; i++) {
+		char c;
         c = cs[i];
         _ELEMENTS_CHECK;
 
