@@ -1,6 +1,7 @@
 EXE_NAME='tst'
 
 CC=gcc
+CXX=g++
 
 CFLAGS=--std=c99 -Werror -Wall -Wextra
 CFLAGS+=-funsigned-char
@@ -21,6 +22,11 @@ CFLAGS+=-Wstrict-aliasing
 CFLAGS+=--pedantic-errors
 CFLAGS+=-g
 
+CXXFLAGS=-std=c++11
+CXXFLAGS+=-g
+
 all:
 	${CC} ${CFLAGS} -c event-msgpack.c
-	${CC} -I. -o ${EXE_NAME} event-msgpack.o ./test/test.c
+	${CXX} ${CXXFLAGS} -I. -c ./test/readTest.cpp
+	${CXX} ${CXXFLAGS} -I. -c ./test/writeTest.cpp
+	${CXX} ${CXXFLAGS} -I. -o ${EXE_NAME} event-msgpack.o ./test/test.cpp readTest.o writeTest.o -lcppunit
