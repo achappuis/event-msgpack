@@ -37,6 +37,7 @@
 
 #define ERROR_UNKNOWN 1
 #define ERROR_OUT_OF_RANGE 2
+#define ERROR_BAD_PARAMETER 4
 
 struct vtable {
 #ifndef NO_READER
@@ -81,23 +82,23 @@ extern "C" {
 
 void msgpk_init(msgpk_t *msgpk);
 #ifndef NO_READER
-void msgpk_read(msgpk_t *msgpk, char *cs, unsigned int len);
+void msgpk_read(msgpk_t *msgpk, const char *cs, unsigned int len);
 #endif
 #ifndef NO_WRITER
 char msgpk_write_start_map(msgpk_t *, int);
 char msgpk_write_start_array(msgpk_t *, int);
 
-char msgpk_write_str(msgpk_t *, char *);
-char msgpk_write_str_entry(msgpk_t *, char *, char *);
+char msgpk_write_str(msgpk_t *, const char *);
+char msgpk_write_str_entry(msgpk_t *, const char *, const char *);
 
 char msgpk_write_nil(msgpk_t *);
-char msgpk_write_nil_entry(msgpk_t *, char *);
+char msgpk_write_nil_entry(msgpk_t *, const char *);
 
 char msgpk_write_boolean(msgpk_t *, char);
-char msgpk_write_boolean_entry(msgpk_t *, char *, char);
+char msgpk_write_boolean_entry(msgpk_t *, const char *, char);
 
 char msgpk_write_number(msgpk_t *, int);
-char msgpk_write_number_entry(msgpk_t *, char *, int);
+char msgpk_write_number_entry(msgpk_t *, const char *, int);
 #endif
 
 #ifdef __cplusplus

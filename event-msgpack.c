@@ -35,15 +35,7 @@
 
 void msgpk_init(msgpk_t *msgpk)
 {
-    struct vtable tmp = {
-#ifndef NO_READER
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-#endif
-#ifndef NO_WRITER
-        NULL, NULL,
-#endif
-    };
-    msgpk->vt = tmp;
+    memset(&(msgpk->vt), 0, sizeof(struct vtable));
     memset(msgpk->key, 0, KEY_SIZE);
     msgpk->flags = 0;
     msgpk->map_el_cnt = -1;
@@ -51,8 +43,13 @@ void msgpk_init(msgpk_t *msgpk)
 }
 
 #ifndef NO_READER
-void msgpk_read(msgpk_t *msgpk, char *cs, unsigned int len)
+void msgpk_read(msgpk_t *msgpk, const char *cs, unsigned int len)
 {
+    if (msgpk == NULL)
+        return;
+    if (cs == NULL)
+        return;
+
     unsigned long i;
     char c;
 
@@ -157,6 +154,9 @@ void msgpk_read(msgpk_t *msgpk, char *cs, unsigned int len)
 #ifndef NO_WRITER
 char msgpk_write_start_map(msgpk_t *msgpk, int size)
 {
+    if (msgpk == NULL)
+        return -1;
+
     if (size > 15) {
         _CAST_VALUE_FUNC(write_error, ERROR_OUT_OF_RANGE);
         return -1;
@@ -168,6 +168,9 @@ char msgpk_write_start_map(msgpk_t *msgpk, int size)
 
 char msgpk_write_start_array(msgpk_t *msgpk, int size)
 {
+    if (msgpk == NULL)
+        return -1;
+
     if (size > 15) {
         _CAST_VALUE_FUNC(write_error, ERROR_OUT_OF_RANGE);
         return -1;
@@ -177,8 +180,15 @@ char msgpk_write_start_array(msgpk_t *msgpk, int size)
     return 0;
 }
 
-void _write_fixstr_no_test(msgpk_t *msgpk, char *val, unsigned char size)
+void _write_fixstr_no_test(msgpk_t *msgpk, const char *val, unsigned char size)
 {
+    if (msgpk == NULL)
+        return;
+    if (val == NULL) {
+        _CAST_VALUE_FUNC(write_error, ERROR_BAD_PARAMETER);
+        return ;
+    }
+
     unsigned char i;
     _CAST_VALUE_FUNC(writer, FIXSTR_VAL + size);
 
@@ -187,8 +197,15 @@ void _write_fixstr_no_test(msgpk_t *msgpk, char *val, unsigned char size)
     }
 }
 
-char msgpk_write_str(msgpk_t *msgpk, char *val)
+char msgpk_write_str(msgpk_t *msgpk, const char *val)
 {
+    if (msgpk == NULL)
+        return -1;
+    if (val == NULL) {
+        _CAST_VALUE_FUNC(write_error, ERROR_BAD_PARAMETER);
+        return -1;
+    }
+
     unsigned char size;
     size = strlen(val);
 
@@ -201,8 +218,19 @@ char msgpk_write_str(msgpk_t *msgpk, char *val)
     return -1;
 }
 
-char msgpk_write_str_entry(msgpk_t *msgpk, char *key, char *val)
+char msgpk_write_str_entry(msgpk_t *msgpk, const char *key, const char *val)
 {
+    if (msgpk == NULL)
+        return -1;
+    if (key == NULL) {
+        _CAST_VALUE_FUNC(write_error, ERROR_BAD_PARAMETER);
+        return -1;
+    }
+    if (val == NULL) {
+        _CAST_VALUE_FUNC(write_error, ERROR_BAD_PARAMETER);
+        return -1;
+    }
+
     unsigned char k_size, v_size;
     k_size = strlen(key);
     v_size = strlen(val);
@@ -220,12 +248,22 @@ char msgpk_write_str_entry(msgpk_t *msgpk, char *key, char *val)
 
 char msgpk_write_nil(msgpk_t *msgpk)
 {
+    if (msgpk == NULL)
+        return -1;
+
     _CAST_VALUE_FUNC(writer, NIL_VAL);
     return 0;
 }
 
-char msgpk_write_nil_entry(msgpk_t *msgpk, char *key)
+char msgpk_write_nil_entry(msgpk_t *msgpk, const char *key)
 {
+    if (msgpk == NULL)
+        return -1;
+    if (key == NULL) {
+        _CAST_VALUE_FUNC(write_error, ERROR_BAD_PARAMETER);
+        return -1;
+    }
+
     unsigned char k_size;
     k_size = strlen(key);
 
@@ -242,6 +280,9 @@ char msgpk_write_nil_entry(msgpk_t *msgpk, char *key)
 
 char msgpk_write_boolean(msgpk_t *msgpk, char val)
 {
+    if (msgpk == NULL)
+        return -1;
+
     if (val == 0) {
         _CAST_VALUE_FUNC(writer, BOOLEAN_VAL);
     } else {
@@ -251,8 +292,15 @@ char msgpk_write_boolean(msgpk_t *msgpk, char val)
     return 0;
 }
 
-char msgpk_write_boolean_entry(msgpk_t *msgpk, char *key, char val)
+char msgpk_write_boolean_entry(msgpk_t *msgpk, const char *key, char val)
 {
+    if (msgpk == NULL)
+        return -1;
+    if (key == NULL) {
+        _CAST_VALUE_FUNC(write_error, ERROR_BAD_PARAMETER);
+        return -1;
+    }
+
     unsigned char k_size;
     k_size = strlen(key);
 
@@ -275,6 +323,9 @@ char msgpk_write_boolean_entry(msgpk_t *msgpk, char *key, char val)
 
 char msgpk_write_number(msgpk_t *msgpk, int val)
 {
+    if (msgpk == NULL)
+        return -1;
+
     if (val >= 0 && val <= PFIXINT_MAX) {
         _CAST_VALUE_FUNC(writer, val);
     } else if (val < 0 && val >= NFIXINT_MIN) {
@@ -287,8 +338,15 @@ char msgpk_write_number(msgpk_t *msgpk, int val)
     return 0;
 }
 
-char msgpk_write_number_entry(msgpk_t *msgpk, char *key, int val)
+char msgpk_write_number_entry(msgpk_t *msgpk, const char *key, int val)
 {
+    if (msgpk == NULL)
+        return -1;
+    if (key == NULL) {
+        _CAST_VALUE_FUNC(write_error, ERROR_BAD_PARAMETER);
+        return -1;
+    }
+
     unsigned char k_size;
     k_size = strlen(key);
 
