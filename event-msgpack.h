@@ -19,11 +19,32 @@
 #define NIL_VAL        0xC0
 #define BOOLEAN_MASQ   0xFE
 #define BOOLEAN_VAL    0xC2
+#define UINT8_VAL      0xCC
+#define UINT16_VAL     0xCD
+#define UINT32_VAL     0xCE
+#define INT8_VAL       0xD0
+#define INT16_VAL      0xD1
+#define INT32_VAL      0xD2
 #define NFIXINT_MASQ   0xE0
 #define NFIXINT_VAL    0xE0
 
-#define PFIXINT_MAX    127
-#define NFIXINT_MIN    -32
+#define MSGPACK_PFIXINT_MIN    (0U)
+#define MSGPACK_PFIXINT_MAX    (127U)
+#define MSGPACK_UINT8_MIN      (PFIXINT_MAX + 1U)
+#define MSGPACK_UINT8_MAX      (0xFFU)
+#define MSGPACK_UINT16_MIN     (UINT8_MAX + 1U)
+#define MSGPACK_UINT16_MAX     (0xFFFFU)
+#define MSGPACK_UINT32_MIN     (UINT16_MAX + 1U)
+#define MSGPACK_UINT32_MAX     (0xFFFFFFFFU)
+#define MSGPACK_INT8_MIN       (-127)
+#define MSGPACK_INT8_MAX       (NFIXINT_MIN - 1)
+#define MSGPACK_INT16_MIN      (-32767)
+#define MSGPACK_INT16_MAX      (INT8_MIN - 1)
+#define MSGPACK_INT32_MIN      (-2147483647)
+#define MSGPACK_INT32_MAX      (INT16_MIN - 1)
+#define MSGPACK_NFIXINT_MIN    (-32)
+#define MSGPACK_NFIXINT_MAX    (-1)
+
 
 #define _IS(_a, _b, _c) ((_a & _b) == _c)
 
@@ -97,8 +118,8 @@ char msgpk_write_nil_entry(msgpk_t *, const char *);
 char msgpk_write_boolean(msgpk_t *, char);
 char msgpk_write_boolean_entry(msgpk_t *, const char *, char);
 
-char msgpk_write_number(msgpk_t *, int);
-char msgpk_write_number_entry(msgpk_t *, const char *, int);
+char msgpk_write_number(msgpk_t *, long int);
+char msgpk_write_number_entry(msgpk_t *, const char *, long int);
 #endif
 
 #ifdef __cplusplus

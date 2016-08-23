@@ -320,25 +320,59 @@ char msgpk_write_boolean_entry(msgpk_t *msgpk, const char *key, char val)
     return -1;
 }
 
-
-char msgpk_write_number(msgpk_t *msgpk, int val)
+char msgpk_write_number(msgpk_t *msgpk, long int val)
 {
     if (msgpk == NULL)
         return -1;
 
-    if (val >= 0 && val <= PFIXINT_MAX) {
-        _CAST_VALUE_FUNC(writer, val);
-    } else if (val < 0 && val >= NFIXINT_MIN) {
-        _CAST_VALUE_FUNC(writer, NFIXINT_VAL + val + 32);
+    if (val < 0) {
+        /* Negative number */
+        if (val >= MSGPACK_NFIXINT_MIN) {
+            _CAST_VALUE_FUNC(writer, NFIXINT_VAL + val + 32);
+        } else if (val >= MSGPACK_INT8_MIN) {
+            _CAST_VALUE_FUNC(writer, INT8_VAL);
+            _CAST_VALUE_FUNC(writer, (int8_t)val);
+        } else if (val >= MSGPACK_INT16_MIN) {
+            _CAST_VALUE_FUNC(writer, INT16_VAL);
+            _CAST_VALUE_FUNC(writer, (int8_t)((val >> 8) & 0xFF));
+            _CAST_VALUE_FUNC(writer, (int8_t)(val & 0xFF));
+        } else if (val >= MSGPACK_INT32_MIN) {
+            _CAST_VALUE_FUNC(writer, INT32_VAL);
+            _CAST_VALUE_FUNC(writer, (int8_t)((val >> 24) & 0xFF));
+            _CAST_VALUE_FUNC(writer, (int8_t)((val >> 16) & 0xFF));
+            _CAST_VALUE_FUNC(writer, (int8_t)((val >> 8) & 0xFF));
+            _CAST_VALUE_FUNC(writer, (int8_t)(val & 0xFF));
+        } else {
+            _CAST_VALUE_FUNC(write_error, ERROR_OUT_OF_RANGE);
+            return -1;
+        }
     } else {
-        _CAST_VALUE_FUNC(write_error, ERROR_OUT_OF_RANGE);
-        return -1;
+        /* Positive number */
+        if ((unsigned)val <= MSGPACK_PFIXINT_MAX) {
+            _CAST_VALUE_FUNC(writer, val);
+        } else if ((unsigned)val <= MSGPACK_UINT8_MAX) {
+            _CAST_VALUE_FUNC(writer, UINT8_VAL);
+            _CAST_VALUE_FUNC(writer, (uint8_t)val);
+        } else if ((unsigned)val <= MSGPACK_UINT16_MAX) {
+            _CAST_VALUE_FUNC(writer, UINT16_VAL);
+            _CAST_VALUE_FUNC(writer, (uint8_t)((val >> 8) & 0xFF));
+            _CAST_VALUE_FUNC(writer, (uint8_t)val);
+        } else if ((unsigned)val <= MSGPACK_UINT32_MAX) {
+            _CAST_VALUE_FUNC(writer, UINT32_VAL);
+            _CAST_VALUE_FUNC(writer, (uint8_t)((val >> 24) & 0xFF));
+            _CAST_VALUE_FUNC(writer, (uint8_t)((val >> 16) & 0xFF));
+            _CAST_VALUE_FUNC(writer, (uint8_t)((val >> 8) & 0xFF));
+            _CAST_VALUE_FUNC(writer, (uint8_t)val);
+        } else {
+            _CAST_VALUE_FUNC(write_error, ERROR_OUT_OF_RANGE);
+            return -1;
+        }
     }
 
     return 0;
 }
 
-char msgpk_write_number_entry(msgpk_t *msgpk, const char *key, int val)
+char msgpk_write_number_entry(msgpk_t *msgpk, const char *key, long int val)
 {
     if (msgpk == NULL)
         return -1;
@@ -351,15 +385,8 @@ char msgpk_write_number_entry(msgpk_t *msgpk, const char *key, int val)
     k_size = strlen(key);
 
     if (k_size <= 31) {
-        if (val >= 0 && val <= PFIXINT_MAX) {
-            _write_fixstr_no_test(msgpk, key, k_size);
-            _CAST_VALUE_FUNC(writer, val);
-            return 0;
-        } else if (val < 0 && val >= NFIXINT_MIN) {
-            _write_fixstr_no_test(msgpk, key, k_size);
-            _CAST_VALUE_FUNC(writer, NFIXINT_VAL + val + 32);
-            return 0;
-        }
+        _write_fixstr_no_test(msgpk, key, k_size);
+        msgpk_write_number(msgpk, val);
     }
 
     _CAST_VALUE_FUNC(write_error, ERROR_OUT_OF_RANGE);
